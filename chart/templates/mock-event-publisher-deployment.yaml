@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "standardnotes.fullname" . }}-mock-event-publisher
+spec:
+  replicas: {{ .Values.mockEventPublisher.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "standardnotes.name" . }}
+      release: {{ .Release.Name }}
+      component: mock-event-publisher
+  template:
+    metadata:
+      labels:
+        app: {{ include "standardnotes.name" . }}
+        release: {{ .Release.Name }}
+        component: mock-event-publisher
+    spec:
+      containers:
+        - name: mock-event-publisher
+          image: "{{ .Values.mockEventPublisher.image }}"
+          ports:
+            - containerPort: {{ .Values.mockEventPublisher.port }}
+          env:
+            - name: LOG_LEVEL
+              value: "{{ .Values.mockEventPublisher.environment.LOG_LEVEL }}"
+            - name: NODE_ENV
+              value: "{{ .Values.mockEventPublisher.environment.NODE_ENV }}"
+            - name: VERSION
+              value: "{{ .Values.mockEventPublisher.environment.VERSION }}"
+            - name: SNS_TOPIC_ARN
+              value: "{{ .Values.mockEventPublisher.environment.SNS_TOPIC_ARN }}"
+            - name: SNS_ENDPOINT
+              value: "{{ .Values.mockEventPublisher.environment.SNS_ENDPOINT }}"
+            - name: SNS_DISABLE_SSL
+              value: "{{ .Values.mockEventPublisher.environment.SNS_DISABLE_SSL }}"
+            - name: SNS_SECRET_ACCESS_KEY
+              value: "{{ .Values.mockEventPublisher.environment.SNS_SECRET_ACCESS_KEY }}"
+            - name: SNS_ACCESS_KEY_ID
+              value: "{{ .Values.mockEventPublisher.environment.SNS_ACCESS_KEY_ID }}"
+            - name: SNS_AWS_REGION
+              value: "{{ .Values.mockEventPublisher.environment.SNS_AWS_REGION }}"

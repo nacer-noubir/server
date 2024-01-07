@@ -1,0 +1,61 @@
+mockEventPublisher:
+  image: standardnotes/mock-event-publisher
+  port: 3124
+  environment:
+    LOG_LEVEL: debug
+    NODE_ENV: production
+    VERSION: snjs-test
+    SNS_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:payments-local-topic
+    SNS_ENDPOINT: http://localstack:4566
+    SNS_DISABLE_SSL: true
+    SNS_SECRET_ACCESS_KEY: x
+    SNS_ACCESS_KEY_ID: x
+    SNS_AWS_REGION: us-east-1
+
+server:
+  image: standardnotes/server
+  replicas: 1
+  envFile: .github/ci.env
+  port1: 3123
+  port2: 3125
+  additionalPorts:
+    - 3125:3104
+  volumes:
+    - ./logs:/var/lib/server/logs
+
+localstack:
+  image: localstack/localstack:3.0
+  port: 4566
+  environment:
+    SERVICES: sns,sqs
+    HOSTNAME_EXTERNAL: localstack
+    LS_LOG: warn
+  volumes:
+    - ./docker/localstack_bootstrap.sh:/etc/localstack/init/ready.d/localstack_bootstrap.sh
+
+db:
+  image: mysql:8
+  port: 3306
+  envFile: .github/ci.env
+  command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+  volumes:
+    - ./data/mysql:/var/lib/mysql
+    - ./data/import:/docker-entrypoint-initdb.d
+  environment:
+    MYSQL_DATABASE: standard_notes_db
+    MYSQL_USER: std_notes_user
+    MYSQL_PASSWORD: changeme123
+    MYSQL_ROOT_PASSWORD: changeme123
+  pvc:
+    accessModes: "ReadWriteOnce"
+    storage: 1Gi
+
+cache:
+  image: redis:6.0-alpine
+  replicas: 1
+  port: 6379
+  volumes:
+    - ./data/redis/:/data
+  pvc:
+    accessModes: "ReadWriteOnce"
+    storage: 1Gi

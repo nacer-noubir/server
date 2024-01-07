@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "standardnotes.fullname" . }}-cache
+spec:
+  replicas: {{ .Values.cache.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "standardnotes.name" . }}
+      release: {{ .Release.Name }}
+      component: cache
+  template:
+    metadata:
+      labels:
+        app: {{ include "standardnotes.name" . }}
+        release: {{ .Release.Name }}
+        component: cache
+    spec:
+      containers:
+        - name: cache
+          image: "{{ .Values.cache.image }}"
+          ports:
+            - containerPort: {{ .Values.cache.port }}
+          env:
+          
+          volumeMounts:
+            - name: redis-cache-data
+              mountPath: /data  # Adjust the mount path based on your Redis image requirements
+      volumes:
+        - name: redis-cache-data
+          persistentVolumeClaim:
+            claimName: {{ include "standardnotes.fullname" . }}-redis-cache-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "standardnotes.fullname" . }}-cache
+spec:
+  selector:
+    app: {{ include "standardnotes.name" . }}
+    component: cache
+  ports:
+    - protocol: TCP
+      port: {{ .Values.cache.port }}
+      targetPort: {{ .Values.cache.port }}
+  type: ClusterIP

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "standardnotes.fullname" . }}-redis-cache-pvc
+spec:
+  accessModes:
+    - {{ .Values.cache.pvc.accessModes}}
+  resources:
+    requests:
+      storage: {{.Values.cache.pvc.storage}}

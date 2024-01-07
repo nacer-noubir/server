@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "standardnotes.fullname" . }}-server
+spec:
+  replicas: {{ .Values.server.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "standardnotes.name" . }}
+      release: {{ .Release.Name }}
+      component: server
+  template:
+    metadata:
+      labels:
+        app: {{ include "standardnotes.name" . }}
+        release: {{ .Release.Name }}
+        component: server
+    spec:
+      containers:
+        - name: server
+          image: "{{ .Values.server.image }}"
+          ports:
+            - containerPort: {{ .Values.server.port1 }}
+            - containerPort: {{ .Values.server.port2 }}
+          env:
+            - name: DB_HOST
+              value: {{ include "standardnotes.fullname" . }}-db
+            - name: DB_PORT
+              value: "{{ .Values.db.port }}"
+            - name: DB_USER
+              value: {{ .Values.db.environment.MYSQL_USER }}
+            - name: DB_PASSWORD
+              value: {{ .Values.db.environment.MYSQL_PASSWORD }}
+            - name: DB_DATABASE
+              value: {{ .Values.db.environment.MYSQL_DATABASE }}
+            - name: DB_USERNAME
+              value: "std_notes_user"
+            - name: REDIS_HOST
+              value:  {{ include "standardnotes.fullname" . }}-cache
+            - name: REDIS_PORT
+              value: "6379"
+            - name: AUTH_JWT_SECRET
+              value: f95259c5e441f5a4646d76422cfb3df4c4488842901aa50b6c51b8be2e0040e9
+            - name: AUTH_SERVER_ENCRYPTION_SERVER_KEY
+              value: 1087415dfde3093797f9a7ca93a49e7d7aa1861735eb0d32aae9c303b8c3d060
+            - name: VALET_TOKEN_SECRET
+              value: 4b886819ebe1e908077c6cae96311b48a8416bd60cc91c03060e15bdf6b30d1f
+
+      volumes:
+        - name: logs
+          hostPath:
+            path: /var/lib/server/logs

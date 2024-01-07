@@ -1,0 +1,6 @@
+apiVersion: v2
+name: standardnotes
+fullname: standardnptes
+release: v0
+description: A Helm chart for Standard Notes services
+version: 0.1.0
